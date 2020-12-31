@@ -60,22 +60,38 @@ router.put('/:id', async(req, res, next) => {
     }
 });
 
-router.put('/devolver/:id', async(req, res) => {
-    try {
-        res.status(200).send('Se Devolvio!!');
-    } catch (error) {
-        console.log(error);
-        res.status(413).send({ mensaje: 'Error inesperado, No Se encuentra esa persona' });
-    }
+router.put("/devolver/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const updateDevolver = await LibroModel.findByIdAndUpdate(
+      id,
+      { persona_id: [] },
+      { new: true }
+    );
+    res.status(200).json(updateDevolver);
+  } catch (error) {
+    console.log(error);
+    res
+      .status(413)
+      .send({ mensaje: "Error inesperado, No Se encuentra esa persona" });
+  }
 });
 
-router.put('/prestar/:id', async(req, res) => {
-    try {
-        res.status(200).send('Se Presto!!');
-    } catch (error) {
-        console.log(error);
-        res.status(413).send({ mensaje: 'Error inesperado, No Se encuentra esa persona' });
-    }
+router.put("/prestar/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const updatePrestado = await LibroModel.findByIdAndUpdate(
+      id,
+      { persona_id: [req.body.persona] },
+      { new: true }
+    );
+    res.status(200).json(updatePrestado);
+  } catch (error) {
+    console.log(error);
+    res
+      .status(413)
+      .send({ mensaje: "Error inesperado, No Se encuentra esa persona" });
+  }
 });
 
 router.delete('/:id', async(req, res, next) => {
