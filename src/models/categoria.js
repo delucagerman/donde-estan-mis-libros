@@ -7,7 +7,6 @@ const CategoriaSchema = new mongoose.Schema({
         unique: true,
         trim: true,
 
-
     }
 }, {
     versionKey: false
