@@ -4,20 +4,31 @@ const router = express.Router();
 const LibroModel = require("../models/libro");
 
 router.post("/", async (req, res, next) => {
-  const libro = new LibroModel({
-    nombre: req.body.nombre.toUpperCase(),
-    descripcion: req.body.descripcion.toUpperCase(),
-    categoria_id: req.body.categoria_id,
-    persona_id: req.body.persona_id,
-  });
   try {
+    //Validacion de datos
+    if (!req.body.nombre || req.body.nombre == '' || !req.body.categoria_id || req.body.categoria_id == '') {
+      res.status(413).send("Nombre y Categoria son datos obligatorios");
+    }
+    const libro = new LibroModel({
+      nombre: req.body.nombre.toUpperCase(),
+      descripcion: req.body.descripcion.toUpperCase(),
+      categoria_id: req.body.categoria_id,
+      persona_id: req.body.persona_id,
+    });
+
+    const existeLibro = await LibroModel.findOne({nombre: req.body.nombre.toUpperCase()});
+    console.log("Existe Persona: ", existeLibro);
+    if (existeLibro) {
+        res.status(413).send({message:"Ese libro ya existe"});
+    }
+
     const libroGuardado = await libro.save();
     res.status(201).json(libroGuardado);
   } catch (error) {
     res.status(413);
     res.send({
       mensaje:
-        "Ese libro ya existe, nombre y categoria son datos obligatorios, no existe la categoria indicada, no existe la persona indicada",
+        "no existe la categoria indicada, no existe la persona indicada",
     });
     next(error);
   }

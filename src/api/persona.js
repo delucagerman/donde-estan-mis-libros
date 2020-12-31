@@ -5,20 +5,40 @@ const PersonaModel = require("../models/persona");
 const LibroModel = require("../models/libro");
 
 router.post("/", async (req, res, next) => {
-  const persona = new PersonaModel({
-    nombre: req.body.nombre.toUpperCase(),
-    apellido: req.body.apellido.toUpperCase(),
-    alias: req.body.alias.toUpperCase(),
-    email: req.body.email.toLowerCase(),
-  });
   try {
+
+    //Validacion de datos
+    if (!req.body.nombre || req.body.nombre == '') {
+      res.status(413).send({mensaje: "Falta el nombre por completar"});
+    }
+    if (!req.body.apellido || req.body.apellido == '') {
+      res.status(413).send({mensaje: "Falta el apellido por completar"});
+    }
+    if (!req.body.alias || req.body.alias == '') {
+      res.status(413).send({mensaje: "Falta el alias por completar"});
+    }
+    if (!req.body.email || req.body.email == '') {
+      res.status(413).send({mensaje: "Falta el email por completar"});
+    }
+
+    const persona = new PersonaModel({
+      nombre: req.body.nombre.toUpperCase(),
+      apellido: req.body.apellido.toUpperCase(),
+      alias: req.body.alias.toUpperCase(),
+      email: req.body.email.toLowerCase()
+    });
+
+    const existePersona = await PersonaModel.findOne({ email: req.body.email.toLowerCase() });
+    if (existePersona) {
+      res.status(413).send({ mensaje: "El email ya se encuentra registrado" });
+    }
+
     const personaGuardada = await persona.save();
     res.status(201).json(personaGuardada);
   } catch (error) {
-    res.status(413);
-    res.send({
+    res.status(413).send({
       mensaje:
-        "Faltan datos, El email ya se encuentra registrado, error inesperado",
+        "Error inesperado"
     });
     next(error);
   }
@@ -34,6 +54,7 @@ router.get("/", async (req, res) => {
     next(error);
   }
 });
+
 router.get("/:id", async (req, res) => {
   const { id } = req.params;
   try {
@@ -45,7 +66,7 @@ router.get("/:id", async (req, res) => {
     res.status(200).json(libro);
   } catch (error) {
     res.status(413);
-    res.send({ mensaje: "Error inesperado, No se encuentra esa persona" });
+    res.send({ mensaje: "Error inesperado: No se encuentra esa persona" });
     next(error);
   }
 });
@@ -53,13 +74,15 @@ router.get("/:id", async (req, res) => {
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
   try {
+    if (req.body.email){
+      res.status(413).send({
+        mensaje:
+          "No se puede modificar el email",
+      });
+    }
     const updatedPersona = await PersonaModel.findByIdAndUpdate(
       id,
-      {
-        nombre: req.body.nombre.toUpperCase(),
-        apellido: req.body.apellido.toUpperCase(),
-        alias: req.body.alias.toUpperCase(),
-      },
+      req.body,
       { new: true }
     );
     res.status(200).json(updatedPersona);
@@ -67,7 +90,7 @@ router.put("/:id", async (req, res) => {
     console.log(error);
     res.status(413).send({
       mensaje:
-        "Error inesperado, Solo se pude modificar la descripcion del libro",
+        "Error inesperado: No se encuentra esa persona",
     });
     next(error);
   }
@@ -86,8 +109,8 @@ router.delete("/:id", async (req, res, next) => {
       mensaje: "Esa persona tiene libros asociados, no se puede eliminar.",
     });
   } catch (error) {
-    res.status(413).send(error, {
-      mensaje: "Error inesperado, No existe esa persona.",
+    res.status(413).send({
+      mensaje: "Error inesperado: No existe esa persona.",
     });
     next(error);
   }

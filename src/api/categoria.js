@@ -4,20 +4,21 @@ const router = express.Router();
 const CategoriaModel = require("../models/categoria");
 const LibroModel = require("../models/libro");
 
-router.post("/", async (req, res, next) => {
-  const categoria = new CategoriaModel({
-    nombre: req.body.nombre.toUpperCase(),
-  });
+router.post('/', async(req, res, next) => {
   try {
-    const categoriaGuardada = await categoria.save();
-    res.status(201).json(categoriaGuardada);
+      //Validacion de datos
+      if(!req.body.nombre || req.body.nombre == '' ) {
+          res.status(413).send({message:"Faltan datos por completar"});
+      }
+      const categoria = new CategoriaModel({
+          nombre: req.body.nombre.toUpperCase()
+      });
+      const categoriaGuardada = await categoria.save();
+      res.status(200).json(categoriaGuardada);
+      console.log(categoriaGuardada);
   } catch (error) {
-    res.status(413);
-    res.send({
-      mensaje:
-        "Faltan datos, ese nombre de categoria ya existe, error inesperado",
-    });
-    next(error);
+      res.status(413).send({mensaje:"Ese nombre de categoria ya existe"});
+      next(error);
   }
 });
 
@@ -31,6 +32,7 @@ router.get("/", async (req, res, next) => {
     next(error);
   }
 });
+
 router.get("/:id", async (req, res, next) => {
   const { id } = req.params;
   try {
@@ -38,7 +40,7 @@ router.get("/:id", async (req, res, next) => {
     res.status(200).json(categoria);
   } catch (error) {
     res.status(413);
-    res.send({ mensaje: "Error inesperado, Categoria no encontrada" });
+    res.status(413).send({message:"Categoria no encontrada"});
     next(error);
   }
 });
@@ -50,14 +52,14 @@ router.delete("/:id", async (req, res, next) => {
     const libro = await LibroModel.find({ categoria_id: categoria.id });
     if (libro == "") {
       const categoriaBorrada = await CategoriaModel.findByIdAndDelete(id);
-      res.status(200).send({ mensaje: "Se borro correctamente." });
+      res.status(200).send({ mensaje: "La categoria se borro correctamente." });
     }
     res.status(413).send({
       mensaje: "Categoria con libros asociados, no se puede eliminar.",
     });
   } catch (error) {
     res.status(413).send({
-      mensaje: "Error inesperado, No existe Categoria indicada",
+      mensaje: "Error inesperado: No existe Categoria indicada",
     });
     next(error);
   }
