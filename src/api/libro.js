@@ -12,7 +12,6 @@ router.post("/", async (req, res, next) => {
     if (!req.body.nombre || req.body.nombre == '' || !req.body.categoria_id || req.body.categoria_id == '') {
       res.status(413).send("Nombre y Categoria son datos obligatorios");
     }
-    
     const libro = new LibroModel({
       nombre: req.body.nombre.toUpperCase(),
       descripcion: req.body.descripcion.toUpperCase(),
@@ -20,12 +19,11 @@ router.post("/", async (req, res, next) => {
       persona_id: req.body.persona_id,
     });
 
-    try {
-      existeLibro = await LibroModel.findOne({ nombre: req.body.nombre.toUpperCase() });
-    } catch (error) {
+    const existeLibro = await LibroModel.findOne({ nombre: req.body.nombre.toUpperCase() });
+    if (existeLibro) {
       res.status(413).send({ message: "Ese libro ya existe" });
     }
-
+   
     try {
       categoria = await CategoriaModel.findOne({ _id: req.body.categoria_id});
     } catch (error) {
@@ -44,7 +42,7 @@ router.post("/", async (req, res, next) => {
   } catch (error) {
     res.status(413).send({
       mensaje:
-      "Ocurrió un error inesperado"
+      error
     });
     next(error);
   }
@@ -73,7 +71,7 @@ router.get("/:id", async (req, res, next) => {
     res.status(200).json(libro);
   } catch (error) {
     res.status(413);
-    res.send({ mensaje: "Error inesperado, No se encuentra ese libro" });
+    res.send({ mensaje: "No se encuentra ese libro" });
     next(error);
   }
 });
@@ -81,17 +79,27 @@ router.get("/:id", async (req, res, next) => {
 router.put("/:id", async (req, res, next) => {
   const { id } = req.params;
   try {
-    const updatedLibro = await LibroModel.findByIdAndUpdate(
-      id,
-      { descripcion: req.body.descripcion.toUpperCase() },
-      { new: true }
-    );
-    res.status(200).json(updatedLibro);
+    libro = await LibroModel.findOne({ _id: req.body.id });
+
+    if(req.body.nombre.toUpperCase() == libro.nombre.toUpperCase() 
+       && req.body.id == libro.id && req.body.persona_id == libro.persona_id
+       && req.body.categoria_id == libro.categoria_id ) {
+      const updatedLibro = await LibroModel.findByIdAndUpdate(
+        id,
+        { descripcion: req.body.descripcion.toUpperCase() },
+        { new: true }
+      );
+      res.status(200).json(updatedLibro);
+    } else {
+      res.status(413).send({
+        mensaje:
+          "Solo se pude modificar la descripcion del libro",
+      });
+    }
   } catch (error) {
-    console.log(error);
     res.status(413).send({
       mensaje:
-        "Error inesperado, Solo se pude modificar la descripcion del libro",
+        "Ocurrió un error inesperado",
     });
     next(error);
   }
@@ -137,7 +145,7 @@ router.put("/prestar/:id", async (req, res) => {
     } else {
       res.status(413).send({
         mensaje:
-          "El libro ya se encuentra prestado, no se puede prestar hasta que no se devuelva.",
+          estaPrestado
       });
     }
   } catch (error) {
