@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const LibroModel = require("../models/libro");
+const CategoriaModel = require("../models/categoria");
 
 router.post("/", async (req, res, next) => {
   try {
@@ -16,19 +17,26 @@ router.post("/", async (req, res, next) => {
       persona_id: req.body.persona_id,
     });
 
-    const existeLibro = await LibroModel.findOne({nombre: req.body.nombre.toUpperCase()});
-    console.log("Existe Persona: ", existeLibro);
+    const existeLibro = await LibroModel.findOne({ nombre: req.body.nombre.toUpperCase() });
     if (existeLibro) {
-        res.status(413).send({message:"Ese libro ya existe"});
+      res.status(413).send({ message: "Ese libro ya existe" });
+    }
+
+    // // Categoria no encontrada
+    try {
+      const categoria = await CategoriaModel.findById(req.body.categoria_id);
+    } catch (error) {
+      res.status(413).send({ message: "Categoria no encontrada" });
+      next(error);
     }
 
     const libroGuardado = await libro.save();
     res.status(201).json(libroGuardado);
+
   } catch (error) {
-    res.status(413);
-    res.send({
+    res.status(413).send({
       mensaje:
-        "no existe la categoria indicada, no existe la persona indicada",
+        "No existe la persona indicada"
     });
     next(error);
   }
@@ -46,16 +54,19 @@ router.get("/", async (req, res, next) => {
     next(error);
   }
 });
+
 router.get("/:id", async (req, res, next) => {
   const { id } = req.params;
   try {
     //const libro = await LibroModel.findById(id);
     const libro = await LibroModel.findById(id).populate("persona_id");
     //populate muestra todos los datos de la persona que tiene el libro
+    if(!libro) {
+      res.status(413).send({ mensaje: "Error inesperado: El libro no existe" });
+    }
     res.status(200).json(libro);
   } catch (error) {
-    res.status(413);
-    res.send({ mensaje: "Error inesperado, No se encuentra ese libro" });
+    res.status(413).send({ mensaje: "Error inesperado: No se encuentra ese libro" });
     next(error);
   }
 });
@@ -63,6 +74,12 @@ router.get("/:id", async (req, res, next) => {
 router.put("/:id", async (req, res, next) => {
   const { id } = req.params;
   try {
+    if ( req.body.nombre || req.body.id || req.body.categoria_id || req.body.persona_id ) {
+      res.status(413).send({
+        mensaje:
+          "Solo se puede modificar la descripcion del libro",
+      });
+    }
     const updatedLibro = await LibroModel.findByIdAndUpdate(
       id,
       { descripcion: req.body.descripcion.toUpperCase() },
@@ -70,10 +87,9 @@ router.put("/:id", async (req, res, next) => {
     );
     res.status(200).json(updatedLibro);
   } catch (error) {
-    console.log(error);
     res.status(413).send({
       mensaje:
-        "Error inesperado, Solo se pude modificar la descripcion del libro",
+        "Error inesperado",
     });
     next(error);
   }
@@ -100,9 +116,10 @@ router.put("/devolver/:id", async (req, res) => {
     console.log(error);
     res
       .status(413)
-      .send({ mensaje: "Error inesperado, No Se encuentra esa persona" });
+      .send({ mensaje: "Error inesperado: No se encuentra ese libro" });
   }
 });
+
 
 router.put("/prestar/:id", async (req, res) => {
   const { id } = req.params;
@@ -112,7 +129,7 @@ router.put("/prestar/:id", async (req, res) => {
       //Detecta si el libro no se encuentra prestado
       const updatePrestado = await LibroModel.findByIdAndUpdate(
         id,
-        { persona_id: [req.body.persona] },
+        { persona_id: [req.body.persona_id] },
         { new: true }
       );
       res.status(200).send({ mensaje: "Se presto correctamente." });
@@ -126,20 +143,29 @@ router.put("/prestar/:id", async (req, res) => {
     console.log(error);
     res
       .status(413)
-      .send({ mensaje: "Error inesperado, No Se encuentra esa persona" });
+      .send({ mensaje: "Error inesperado: No se encontro la persona a la que se quiere prestar el libro" });
   }
 });
 
 router.delete("/:id", async (req, res, next) => {
   const { id } = req.params;
   try {
-    const libroBorrado = await LibroModel.findByIdAndDelete(id);
-    res.status(200).send({ mensaje: "Se borro correctamente." });
-    //const respuesta = await categoriaModel.find();
+    const estaPrestado = await LibroModel.findById(id);
+    if (estaPrestado.persona_id[0] == undefined) {
+      //Detecta si el libro no se encuentra prestado
+      const libroBorrado = await LibroModel.findByIdAndDelete(id);
+      res.status(200).send({ mensaje: "Se borro correctamente." });
+    } else {
+      res.status(413).send({
+        mensaje:
+          "El libro se encuentra prestado, no se puede eliminar",
+      });
+    }
+;
   } catch (error) {
     res.status(413).send({
       mensaje:
-        "Error inesperado, No se encuentra es libro, Ese libro eta prestado no se puede eliminar",
+        "Error inesperado: No se encuentra es libro",
     });
     next(error);
   }
