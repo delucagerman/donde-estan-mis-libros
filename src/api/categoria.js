@@ -1,45 +1,49 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
-const CategoriaModel = require('../models/categoria')
+const CategoriaModel = require("../models/categoria");
 const LibroModel = require("../models/libro");
 
 router.post('/', async(req, res, next) => {
-    const categoria = new CategoriaModel({
-        nombre: req.body.nombre.toUpperCase()
-    });
     try {
+        //Validacion de datos
+        if (!req.body.nombre || req.body.nombre == '') {
+            res.status(413).send({ message: "Faltan datos por completar" });
+        }
+        const categoria = new CategoriaModel({
+            nombre: req.body.nombre.toUpperCase()
+        });
         const categoriaGuardada = await categoria.save();
-        res.status(201).json(categoriaGuardada);
+        res.status(200).json(categoriaGuardada);
+        console.log(categoriaGuardada);
     } catch (error) {
-        res.status(413);
-        res.send("mensaje:'faltan datos', 'ese nombre de categoria ya existe', 'error inesperado'");
+        res.status(413).send({ mensaje: "Ese nombre de categoria ya existe" });
         next(error);
     }
 });
 
-router.get('/', async(req, res, next) => {
+router.get("/", async(req, res, next) => {
     try {
         const categoria = await CategoriaModel.find();
         res.status(200).json(categoria);
     } catch (error) {
         res.status(413);
-        res.send("mensaje:'Error inesperado'");
+        res.send({ mensaje: "Error inesperado" });
         next(error);
     }
 });
-router.get('/:id', async(req, res, next) => {
+
+router.get("/:id", async(req, res, next) => {
     const { id } = req.params;
     try {
         const categoria = await CategoriaModel.findById(id);
         res.status(200).json(categoria);
     } catch (error) {
         res.status(413);
-        res.send("mensaje: 'Error inesperado, Categoria no encontrada'");
+        res.status(413).send({ message: "Categoria no encontrada" });
         next(error);
     }
 });
-
 
 router.delete("/:id", async(req, res, next) => {
     const { id } = req.params;
@@ -48,14 +52,14 @@ router.delete("/:id", async(req, res, next) => {
         const libro = await LibroModel.find({ categoria_id: categoria.id });
         if (libro == "") {
             const categoriaBorrada = await CategoriaModel.findByIdAndDelete(id);
-            res.status(200).json(categoriaBorrada);
+            res.status(200).send({ mensaje: "La categoria se borro correctamente." });
         }
         res.status(413).send({
-            mensaje: "La categoria no se puede borrar ya que tiene libros asociados.",
+            mensaje: "Categoria con libros asociados, no se puede eliminar.",
         });
     } catch (error) {
         res.status(413).send({
-            mensaje: "Error inesperado, Categoria con libros asociados no se puede eliminar, No existe Categoria indicada",
+            mensaje: "Error inesperado: No existe Categoria indicada",
         });
         next(error);
     }
