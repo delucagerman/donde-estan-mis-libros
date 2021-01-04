@@ -66,7 +66,7 @@ router.get("/:id", async (req, res) => {
     res.status(200).json(libro);
   } catch (error) {
     res.status(413);
-    res.send({ mensaje: "Error inesperado: No se encuentra esa persona" });
+    res.send({ mensaje: "No se encuentra esa persona" });
     next(error);
   }
 });
@@ -74,7 +74,9 @@ router.get("/:id", async (req, res) => {
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    if (req.body.email){
+    var persona = await PersonaModel.findById(id);
+
+    if (req.body.email != persona.email){
       res.status(413).send({
         mensaje:
           "No se puede modificar el email",

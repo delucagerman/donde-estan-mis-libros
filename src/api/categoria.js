@@ -59,7 +59,7 @@ router.delete("/:id", async (req, res, next) => {
     });
   } catch (error) {
     res.status(413).send({
-      mensaje: "Error inesperado: No existe Categoria indicada",
+      mensaje: "No existe Categoria indicada",
     });
     next(error);
   }
