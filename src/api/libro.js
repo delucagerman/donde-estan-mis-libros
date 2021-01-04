@@ -16,7 +16,7 @@ router.post("/", async (req, res, next) => {
       nombre: req.body.nombre.toUpperCase(),
       descripcion: req.body.descripcion.toUpperCase(),
       categoria_id: req.body.categoria_id,
-      persona_id: req.body.persona_id,
+      persona_id: req.body.persona_id !=  '' ? req.body.persona_id : []
     });
 
     const existeLibro = await LibroModel.findOne({ nombre: req.body.nombre.toUpperCase() });
@@ -30,12 +30,14 @@ router.post("/", async (req, res, next) => {
       res.status(413).send({ message: "no existe la categoria indicada" });
     }
   
-    try {
-      categoria = await PersonaModel.findOne({ _id: req.body.persona_id});
-    } catch (error) {
-      res.status(413).send({ message: "no existe la persona indicada" });
+    if(req.body.persona_id != '') {
+      try {
+        categoria = await PersonaModel.findOne({ _id: req.body.persona_id});
+      } catch (error) {
+        res.status(413).send({ message: "no existe la persona indicada" });
+      }
     }
-
+ 
     const libroGuardado = await libro.save();
     res.status(201).json(libroGuardado);
 
