@@ -84,7 +84,11 @@ router.put("/:id", async (req, res) => {
     }
     const updatedPersona = await PersonaModel.findByIdAndUpdate(
       id,
-      req.body,
+      {
+        nombre: req.body.nombre.toUpperCase(),
+        apellido: req.body.apellido.toUpperCase(),
+        alias: req.body.alias.toUpperCase(),
+      },
       { new: true }
     );
     res.status(200).json(updatedPersona);
