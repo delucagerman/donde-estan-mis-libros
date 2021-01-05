@@ -8,7 +8,7 @@ const PersonaModel = require("../models/persona")
 router.post("/", async (req, res, next) => {
   try {
     //Validacion de datos
-    
+
     if (!req.body.nombre || req.body.nombre == '' || !req.body.categoria_id || req.body.categoria_id == '') {
       res.status(413).send("Nombre y Categoria son datos obligatorios");
     }
@@ -16,35 +16,35 @@ router.post("/", async (req, res, next) => {
       nombre: req.body.nombre.toUpperCase(),
       descripcion: req.body.descripcion.toUpperCase(),
       categoria_id: req.body.categoria_id,
-      persona_id: req.body.persona_id !=  '' ? req.body.persona_id : []
+      persona_id: req.body.persona_id != '' ? req.body.persona_id : []
     });
 
     const existeLibro = await LibroModel.findOne({ nombre: req.body.nombre.toUpperCase() });
     if (existeLibro) {
       res.status(413).send({ message: "Ese libro ya existe" });
     }
-   
+
     try {
-      categoria = await CategoriaModel.findOne({ _id: req.body.categoria_id});
+      categoria = await CategoriaModel.findOne({ _id: req.body.categoria_id });
     } catch (error) {
       res.status(413).send({ message: "no existe la categoria indicada" });
     }
-  
-    if(req.body.persona_id != '') {
+
+    if (req.body.persona_id != '') {
       try {
-        categoria = await PersonaModel.findOne({ _id: req.body.persona_id});
+        categoria = await PersonaModel.findOne({ _id: req.body.persona_id });
       } catch (error) {
         res.status(413).send({ message: "no existe la persona indicada" });
       }
     }
- 
+
     const libroGuardado = await libro.save();
     res.status(201).json(libroGuardado);
 
   } catch (error) {
     res.status(413).send({
       mensaje:
-      error
+        error
     });
     next(error);
   }
@@ -83,9 +83,9 @@ router.put("/:id", async (req, res, next) => {
   try {
     libro = await LibroModel.findOne({ _id: req.body.id });
 
-    if(req.body.nombre.toUpperCase() == libro.nombre.toUpperCase() 
-       && req.body.id == libro.id && req.body.persona_id == libro.persona_id
-       && req.body.categoria_id == libro.categoria_id ) {
+    if (req.body.nombre.toUpperCase() == libro.nombre.toUpperCase()
+      && req.body.id == libro.id && req.body.persona_id == libro.persona_id
+      && req.body.categoria_id == libro.categoria_id) {
       const updatedLibro = await LibroModel.findByIdAndUpdate(
         id,
         { descripcion: req.body.descripcion.toUpperCase() },
@@ -110,7 +110,18 @@ router.put("/:id", async (req, res, next) => {
 router.put("/devolver/:id", async (req, res) => {
   const { id } = req.params;
   try {
+
+    try {
+      var revisarSiExiste = await LibroModel.findById(id);
+    } catch (error) {
+      res.status(413).send({
+        mensaje:
+          "No se encuentra ese libro",
+      });
+    }
+
     const estaPrestado = await LibroModel.findById(id);
+
     if (estaPrestado.persona_id[0] != undefined) {
       //Detecta si el libro se encuentra prestado
       const updateDevolver = await LibroModel.findByIdAndUpdate(
@@ -128,46 +139,90 @@ router.put("/devolver/:id", async (req, res) => {
     console.log(error);
     res
       .status(413)
-      .send({ mensaje: "Error inesperado, No Se encuentra esa persona" });
+      .send({ mensaje: "Ocurrio un error inesperado" });
   }
 });
 
 router.put("/prestar/:id", async (req, res) => {
-  const { id } = req.params;
   try {
-    const estaPrestado = await LibroModel.findById(id);
-    if (estaPrestado.persona_id[0] == undefined) {
-      //Detecta si el libro no se encuentra prestado
-      const updatePrestado = await LibroModel.findByIdAndUpdate(
-        id,
-        { persona_id: [req.body.persona] },
-        { new: true }
-      );
-      res.status(200).send({ mensaje: "Se presto correctamente." });
+
+    try {
+      persona = await PersonaModel.findOne({ _id: req.body.persona_id });
+    } catch (error) {
+      res.status(413).send({
+        mensaje: "no se encontro la persona a la que se quiere prestar el libro"
+      });
+    }
+
+    try {
+      libro = await LibroModel.findOne({ _id: req.body.id });
+    } catch (error) {
+      res.status(413).send({
+        mensaje: "No se encontró el libro"
+      });
+    }
+
+    var libro = await LibroModel.findOne({ _id: req.body.id });
+    if (!libro.persona_id[0]) {
+      LibroModel.findByIdAndUpdate(req.body.id, { persona_id: req.body.persona_id },
+        function (err, docs) {
+          if (err) {
+            console.log(err)
+          }
+          else {
+            res.status(200).send({ mensaje: "se presto correctamente" });
+          }
+        });
     } else {
       res.status(413).send({
-        mensaje:
-          estaPrestado
+        mensaje: "el libro ya se encuentra prestado, no se puede prestar hasta que no se devuelva"
       });
     }
   } catch (error) {
     console.log(error);
     res
       .status(413)
-      .send({ mensaje: "Error inesperado, No Se encuentra esa persona" });
+      .send({ mensaje: "Ocurrio un error inesperado" });
   }
 });
 
 router.delete("/:id", async (req, res, next) => {
   const { id } = req.params;
+  var libroBorrado = [];
   try {
-    const libroBorrado = await LibroModel.findByIdAndDelete(id);
-    res.status(200).send({ mensaje: "Se borro correctamente." });
+    try {
+      libroBorrado = await LibroModel.findById(id);
+    } catch (error) {
+      res.status(413).send({
+        mensaje:
+          "No se encuentra ese libro",
+      });
+    }
+
+    try {
+      var estaPrestado = await LibroModel.findById(id);
+
+      if (estaPrestado.persona_id[0] != undefined) {
+        res.status(413).send({
+          mensaje:
+          "ese libro esta prestado no se puede borrar"
+        });
+      } else {
+        libroBorrado = await LibroModel.findByIdAndDelete(id);
+        res.status(200).send({ mensaje: "Se borro correctamente." });
+      }
+    } catch (error) {
+      res.status(413).send({
+        mensaje:
+          estaPrestado,
+      });
+    }
+ 
     //const respuesta = await categoriaModel.find();
   } catch (error) {
     res.status(413).send({
       mensaje:
-        "Error inesperado, No se encuentra es libro, Ese libro eta prestado no se puede eliminar",
+        "Error inesperado",
     });
     next(error);
   }
