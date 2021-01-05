@@ -59,14 +59,15 @@ router.get("/:id", async (req, res) => {
   const { id } = req.params;
   try {
     const persona = await PersonaModel.findById(id);
-    const libro = await LibroModel.find({ persona_id: persona.id });
-    if (libro == "") {
-      res.status(200).send({ mensaje: "Esta persona no tiene ningun libro" });
+    if(persona == null){
+      res.status(413);
+      res.send({ mensaje: "no se encuentra esa persona" });
+    } else {
+      res.status(200).send({ mensaje: persona });
     }
-    res.status(200).json(libro);
   } catch (error) {
     res.status(413);
-    res.send({ mensaje: "No se encuentra esa persona" });
+    res.send({ mensaje: "error inesperado" });
     next(error);
   }
 });
