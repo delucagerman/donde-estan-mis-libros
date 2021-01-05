@@ -26,6 +26,10 @@ router.post("/", async (req, res, next) => {
 
     try {
       categoria = await CategoriaModel.findOne({ _id: req.body.categoria_id });
+
+      if(!categoria){
+        res.status(413).send({ message: "no existe la categoria indicada" });
+      }
     } catch (error) {
       res.status(413).send({ message: "no existe la categoria indicada" });
     }
@@ -33,13 +37,17 @@ router.post("/", async (req, res, next) => {
     if (req.body.persona_id != '') {
       try {
         categoria = await PersonaModel.findOne({ _id: req.body.persona_id });
+
+        if(!categoria){
+          res.status(413).send({ message: "no existe la persona indicada" });
+        }
       } catch (error) {
         res.status(413).send({ message: "no existe la persona indicada" });
       }
     }
 
     const libroGuardado = await libro.save();
-    res.status(201).json(libroGuardado);
+    res.status(200).json(libroGuardado);
 
   } catch (error) {
     res.status(413).send({

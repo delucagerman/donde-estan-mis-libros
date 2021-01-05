@@ -97,7 +97,7 @@ router.put("/:id", async (req, res) => {
     console.log(error);
     res.status(413).send({
       mensaje:
-        "Error inesperado: No se encuentra esa persona",
+        "No se encuentra esa persona",
     });
     next(error);
   }
@@ -117,7 +117,7 @@ router.delete("/:id", async (req, res, next) => {
     });
   } catch (error) {
     res.status(413).send({
-      mensaje: "Error inesperado: No existe esa persona.",
+      mensaje: "No existe esa persona.",
     });
     next(error);
   }
