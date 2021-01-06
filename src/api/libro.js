@@ -151,8 +151,16 @@ router.put("/prestar/:id", async(req, res) => {
 router.delete("/:id", async(req, res, next) => {
     const { id } = req.params;
     try {
-        const libroBorrado = await LibroModel.findByIdAndDelete(id);
-        res.status(200).send({ mensaje: "Se borro correctamente." });
+        const libro = await LibroModel.findById(id);
+        if (libro.persona_id[0] != undefined && libro.persona_id[0] != []) {
+            res.status(413).send({
+                mensaje: "Ese libro eta prestado no se puede eliminar"
+            })
+        } else {
+            const libroBorrado = await LibroModel.findByIdAndDelete(id);
+            res.status(200).send({ mensaje: "Se borro correctamente." });
+        }
+
         //const respuesta = await categoriaModel.find();
     } catch (error) {
         res.status(413).send({
