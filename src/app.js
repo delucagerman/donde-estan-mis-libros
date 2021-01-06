@@ -3,11 +3,8 @@ require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const middlewares = require('./middlewares');
-<<<<<<< HEAD
-const cors = require('cors');
-=======
 const mongoose = require('mongoose');
->>>>>>> bc40207a4341ea33ad0fb8edf1bd5576715f7891
+const cors = require('cors');
 
 //const router = require('./api');
 const categoriaRouter = require('./api/categoria');
