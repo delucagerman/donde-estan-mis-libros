@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const middlewares = require('./middlewares');
+const cors = require('cors');
 
 //const router = require('./api');
 const categoriaRouter = require('./api/categoria');
@@ -16,6 +17,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded());
+app.use(cors());
 
 //RUTAS
 //app.use('/api', router);
