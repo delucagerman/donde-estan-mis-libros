@@ -16,7 +16,7 @@ router.post("/", async (req, res, next) => {
       nombre: req.body.nombre.toUpperCase(),
       descripcion: req.body.descripcion.toUpperCase(),
       categoria_id: req.body.categoria_id,
-      persona_id: req.body.persona_id != '' ? req.body.persona_id : []
+      persona_id: string.IsNullOrEmpty(req.body.persona_id) ? [] : req.body.persona_id
     });
 
     const existeLibro = await LibroModel.findOne({ nombre: req.body.nombre.toUpperCase() });
