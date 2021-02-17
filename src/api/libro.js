@@ -6,58 +6,71 @@ const CategoriaModel = require("../models/categoria");
 const PersonaModel = require("../models/persona")
 
 router.post("/", async (req, res, next) => {
+  let guardar = true;
+  let error = [];
   try {
     //Validacion de datos
 
-    if (!req.body.nombre || req.body.nombre == '' || !req.body.categoria_id || req.body.categoria_id == '') {
-      res.status(413).send("Nombre y Categoria son datos obligatorios");
+    if (
+      !req.body.nombre ||
+      req.body.nombre == "" ||
+      !req.body.categoria_id ||
+      req.body.categoria_id == ""
+    ) {
+      guardar = false;
+      error.push("Falta nombre o categoria.");
     }
     const libro = new LibroModel({
       nombre: req.body.nombre.toUpperCase(),
       descripcion: req.body.descripcion.toUpperCase(),
       categoria_id: req.body.categoria_id,
-      persona_id: string.IsNullOrEmpty(req.body.persona_id) ? [] : req.body.persona_id
+      persona_id: req.body.persona_id ? req.body.persona_id : [],
     });
 
-    const existeLibro = await LibroModel.findOne({ nombre: req.body.nombre.toUpperCase() });
+    const existeLibro = await LibroModel.findOne({
+      nombre: req.body.nombre.toUpperCase(),
+    });
     if (existeLibro) {
-      res.status(413).send({ message: "Ese libro ya existe" });
+      guardar = false;
+      error.push("Ese libro ya se encuentra registrado");
     }
 
     try {
       categoria = await CategoriaModel.findOne({ _id: req.body.categoria_id });
 
-      if(!categoria){
-        res.status(413).send({ message: "no existe la categoria indicada" });
+      if (!categoria) {
+        guardar = false;
+        error.push("No existe la categoria seleccionada");
       }
-    } catch (error) {
-      res.status(413).send({ message: "no existe la categoria indicada" });
+    } catch (e) {
+      guardar = false;
+      error.push("Error inesperado", e);
     }
 
-    if (req.body.persona_id != '') {
+    if (req.body.persona_id) {
       try {
-        categoria = await PersonaModel.findOne({ _id: req.body.persona_id });
+        persona = await PersonaModel.findOne({ _id: req.body.persona_id });
 
-        if(!categoria){
-          res.status(413).send({ message: "no existe la persona indicada" });
+        if (!persona) {
+          guardar = false;
+          error.push("Esa persona no se encuentra registrada");
         }
-      } catch (error) {
-        res.status(413).send({ message: "no existe la persona indicada" });
+      } catch (e) {
+        guardar = false;
+        error.push("Error inesperado", e);
       }
     }
-
-    const libroGuardado = await libro.save();
-    res.status(200).json(libroGuardado);
-
-  } catch (error) {
-    res.status(413).send({
-      mensaje:
-        error
-    });
-    next(error);
+    if (guardar) {
+      const libroGuardado = await libro.save();
+      res.status(200).json(libroGuardado);
+    } else {
+      res.status(413).send(error);
+    }
+  } catch (e) {
+    res.status(413).send("Error inesperado", e);
+    next(e);
   }
 });
-
 
 
 router.get("/", async (req, res, next) => {
