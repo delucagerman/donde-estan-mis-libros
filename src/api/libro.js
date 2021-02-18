@@ -44,7 +44,7 @@ router.post("/", async (req, res, next) => {
       }
     } catch (e) {
       guardar = false;
-      error.push("Error inesperado", e);
+      error.push("Error inesperado");
     }
 
     if (req.body.persona_id) {
@@ -57,17 +57,17 @@ router.post("/", async (req, res, next) => {
         }
       } catch (e) {
         guardar = false;
-        error.push("Error inesperado", e);
+        error.push("Error inesperado");
       }
     }
     if (guardar) {
       const libroGuardado = await libro.save();
       res.status(200).json(libroGuardado);
     } else {
-      res.status(413).send(error);
+      res.status(413).send({ mensaje: error });
     }
   } catch (e) {
-    res.status(413).send("Error inesperado", e);
+    res.status(413).send({ mensaje: e });
     next(e);
   }
 });

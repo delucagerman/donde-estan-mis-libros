@@ -6,29 +6,30 @@ const LibroModel = require("../models/libro");
 
 router.post("/", async (req, res, next) => {
   try {
-
     //Validacion de datos
-    if (!req.body.nombre || req.body.nombre == '') {
-      res.status(413).send({mensaje: "Falta el nombre por completar"});
+    if (!req.body.nombre || req.body.nombre == "") {
+      res.status(413).send({ mensaje: "Falta el nombre por completar" });
     }
-    if (!req.body.apellido || req.body.apellido == '') {
-      res.status(413).send({mensaje: "Falta el apellido por completar"});
+    if (!req.body.apellido || req.body.apellido == "") {
+      res.status(413).send({ mensaje: "Falta el apellido por completar" });
     }
-    if (!req.body.alias || req.body.alias == '') {
-      res.status(413).send({mensaje: "Falta el alias por completar"});
+    if (!req.body.alias || req.body.alias == "") {
+      res.status(413).send({ mensaje: "Falta el alias por completar" });
     }
-    if (!req.body.email || req.body.email == '') {
-      res.status(413).send({mensaje: "Falta el email por completar"});
+    if (!req.body.email || req.body.email == "") {
+      res.status(413).send({ mensaje: "Falta el email por completar" });
     }
 
     const persona = new PersonaModel({
       nombre: req.body.nombre.toUpperCase(),
       apellido: req.body.apellido.toUpperCase(),
       alias: req.body.alias.toUpperCase(),
-      email: req.body.email.toLowerCase()
+      email: req.body.email.toLowerCase(),
     });
 
-    const existePersona = await PersonaModel.findOne({ email: req.body.email.toLowerCase() });
+    const existePersona = await PersonaModel.findOne({
+      email: req.body.email.toLowerCase(),
+    });
     if (existePersona) {
       res.status(413).send({ mensaje: "El email ya se encuentra registrado" });
     }
@@ -37,8 +38,7 @@ router.post("/", async (req, res, next) => {
     res.status(201).json(personaGuardada);
   } catch (error) {
     res.status(413).send({
-      mensaje:
-        "Error inesperado"
+      mensaje: "Error inesperado",
     });
     next(error);
   }
@@ -59,7 +59,7 @@ router.get("/:id", async (req, res) => {
   const { id } = req.params;
   try {
     const persona = await PersonaModel.findById(id);
-    if(persona == null){
+    if (persona == null) {
       res.status(413);
       res.send({ mensaje: "no se encuentra esa persona" });
     } else {
@@ -75,14 +75,6 @@ router.get("/:id", async (req, res) => {
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    var persona = await PersonaModel.findById(id);
-
-    if (req.body.email != persona.email){
-      res.status(413).send({
-        mensaje:
-          "No se puede modificar el email",
-      });
-    }
     const updatedPersona = await PersonaModel.findByIdAndUpdate(
       id,
       {
@@ -96,8 +88,7 @@ router.put("/:id", async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(413).send({
-      mensaje:
-        "No se encuentra esa persona",
+      mensaje: "No se encuentra esa persona",
     });
     next(error);
   }
@@ -112,7 +103,7 @@ router.delete("/:id", async (req, res, next) => {
       const personaBorrada = await PersonaModel.findByIdAndDelete(id);
       res.status(200).send({ mensaje: "Se borro correctamente" });
     }
-    res.status(200).send({
+    res.status(413).send({
       mensaje: "Esa persona tiene libros asociados, no se puede eliminar.",
     });
   } catch (error) {
