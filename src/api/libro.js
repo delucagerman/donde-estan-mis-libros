@@ -3,11 +3,7 @@ const router = express.Router();
 
 const LibroModel = require("../models/libro");
 const CategoriaModel = require("../models/categoria");
-<<<<<<< HEAD
 const PersonaModel = require("../models/persona");
-=======
-const PersonaModel = require("../models/persona")
->>>>>>> ebf692f8f7d3b63ea1d65285b9f8a7db1492a2d0
 
 router.post("/", async (req, res, next) => {
   let guardar = true;
@@ -48,7 +44,7 @@ router.post("/", async (req, res, next) => {
       }
     } catch (e) {
       guardar = false;
-      error.push("Error inesperado", e);
+      error.push("Error inesperado");
     }
 
     if (req.body.persona_id) {
@@ -61,7 +57,7 @@ router.post("/", async (req, res, next) => {
         }
       } catch (e) {
         guardar = false;
-        error.push("Error inesperado", e);
+        error.push("Error inesperado");
       }
     }
     if (guardar) {
@@ -71,15 +67,11 @@ router.post("/", async (req, res, next) => {
       res.status(413).send(error);
     }
   } catch (e) {
-    res.status(413).send("Error inesperado", e);
+    res.status(413).send("Error inesperado");
     next(e);
   }
 });
 
-<<<<<<< HEAD
-=======
-
->>>>>>> ebf692f8f7d3b63ea1d65285b9f8a7db1492a2d0
 router.get("/", async (req, res, next) => {
   try {
     const libro = await LibroModel.find();
@@ -111,18 +103,12 @@ router.put("/:id", async (req, res, next) => {
   try {
     libro = await LibroModel.findOne({ _id: req.body.id });
 
-<<<<<<< HEAD
     if (
       req.body.nombre.toUpperCase() == libro.nombre.toUpperCase() &&
       req.body.id == libro.id &&
       req.body.persona_id == libro.persona_id &&
       req.body.categoria_id == libro.categoria_id
     ) {
-=======
-    if (req.body.nombre.toUpperCase() == libro.nombre.toUpperCase()
-      && req.body.id == libro.id && req.body.persona_id == libro.persona_id
-      && req.body.categoria_id == libro.categoria_id) {
->>>>>>> ebf692f8f7d3b63ea1d65285b9f8a7db1492a2d0
       const updatedLibro = await LibroModel.findByIdAndUpdate(
         id,
         { descripcion: req.body.descripcion.toUpperCase() },
@@ -131,22 +117,12 @@ router.put("/:id", async (req, res, next) => {
       res.status(200).json(updatedLibro);
     } else {
       res.status(413).send({
-<<<<<<< HEAD
         mensaje: "Solo se pude modificar la descripcion del libro",
-=======
-        mensaje:
-          "Solo se pude modificar la descripcion del libro",
->>>>>>> ebf692f8f7d3b63ea1d65285b9f8a7db1492a2d0
       });
     }
   } catch (error) {
     res.status(413).send({
-<<<<<<< HEAD
       mensaje: "Ocurrió un error inesperado",
-=======
-      mensaje:
-        "Ocurrió un error inesperado",
->>>>>>> ebf692f8f7d3b63ea1d65285b9f8a7db1492a2d0
     });
     next(error);
   }
@@ -155,20 +131,11 @@ router.put("/:id", async (req, res, next) => {
 router.put("/devolver/:id", async (req, res) => {
   const { id } = req.params;
   try {
-<<<<<<< HEAD
-=======
-
->>>>>>> ebf692f8f7d3b63ea1d65285b9f8a7db1492a2d0
     try {
       var revisarSiExiste = await LibroModel.findById(id);
     } catch (error) {
       res.status(413).send({
-<<<<<<< HEAD
         mensaje: "No se encuentra ese libro",
-=======
-        mensaje:
-          "No se encuentra ese libro",
->>>>>>> ebf692f8f7d3b63ea1d65285b9f8a7db1492a2d0
       });
     }
 
@@ -189,32 +156,18 @@ router.put("/devolver/:id", async (req, res) => {
     }
   } catch (error) {
     console.log(error);
-<<<<<<< HEAD
     res.status(413).send({ mensaje: "Ocurrio un error inesperado" });
-=======
-    res
-      .status(413)
-      .send({ mensaje: "Ocurrio un error inesperado" });
->>>>>>> ebf692f8f7d3b63ea1d65285b9f8a7db1492a2d0
   }
 });
 
 router.put("/prestar/:id", async (req, res) => {
   try {
-<<<<<<< HEAD
-=======
-
->>>>>>> ebf692f8f7d3b63ea1d65285b9f8a7db1492a2d0
     try {
       persona = await PersonaModel.findOne({ _id: req.body.persona_id });
     } catch (error) {
       res.status(413).send({
-<<<<<<< HEAD
         mensaje:
-          "no se encontro la persona a la que se quiere prestar el libro",
-=======
-        mensaje: "no se encontro la persona a la que se quiere prestar el libro"
->>>>>>> ebf692f8f7d3b63ea1d65285b9f8a7db1492a2d0
+          "No se encontro la persona a la que se quiere prestar el libro",
       });
     }
 
@@ -222,17 +175,12 @@ router.put("/prestar/:id", async (req, res) => {
       libro = await LibroModel.findOne({ _id: req.body.id });
     } catch (error) {
       res.status(413).send({
-<<<<<<< HEAD
         mensaje: "No se encontró el libro",
-=======
-        mensaje: "No se encontró el libro"
->>>>>>> ebf692f8f7d3b63ea1d65285b9f8a7db1492a2d0
       });
     }
 
     var libro = await LibroModel.findOne({ _id: req.body.id });
     if (!libro.persona_id[0]) {
-<<<<<<< HEAD
       LibroModel.findByIdAndUpdate(
         req.body.id,
         { persona_id: req.body.persona_id },
@@ -248,31 +196,11 @@ router.put("/prestar/:id", async (req, res) => {
       res.status(413).send({
         mensaje:
           "el libro ya se encuentra prestado, no se puede prestar hasta que no se devuelva",
-=======
-      LibroModel.findByIdAndUpdate(req.body.id, { persona_id: req.body.persona_id },
-        function (err, docs) {
-          if (err) {
-            console.log(err)
-          }
-          else {
-            res.status(200).send({ mensaje: "se presto correctamente" });
-          }
-        });
-    } else {
-      res.status(413).send({
-        mensaje: "el libro ya se encuentra prestado, no se puede prestar hasta que no se devuelva"
->>>>>>> ebf692f8f7d3b63ea1d65285b9f8a7db1492a2d0
       });
     }
   } catch (error) {
     console.log(error);
-<<<<<<< HEAD
     res.status(413).send({ mensaje: "Ocurrio un error inesperado" });
-=======
-    res
-      .status(413)
-      .send({ mensaje: "Ocurrio un error inesperado" });
->>>>>>> ebf692f8f7d3b63ea1d65285b9f8a7db1492a2d0
   }
 });
 
@@ -284,12 +212,7 @@ router.delete("/:id", async (req, res, next) => {
       libroBorrado = await LibroModel.findById(id);
     } catch (error) {
       res.status(413).send({
-<<<<<<< HEAD
         mensaje: "No se encuentra ese libro",
-=======
-        mensaje:
-          "No se encuentra ese libro",
->>>>>>> ebf692f8f7d3b63ea1d65285b9f8a7db1492a2d0
       });
     }
 
@@ -298,12 +221,7 @@ router.delete("/:id", async (req, res, next) => {
 
       if (estaPrestado.persona_id[0] != undefined) {
         res.status(413).send({
-<<<<<<< HEAD
           mensaje: "ese libro esta prestado no se puede borrar",
-=======
-          mensaje:
-          "ese libro esta prestado no se puede borrar"
->>>>>>> ebf692f8f7d3b63ea1d65285b9f8a7db1492a2d0
         });
       } else {
         libroBorrado = await LibroModel.findByIdAndDelete(id);
@@ -311,7 +229,6 @@ router.delete("/:id", async (req, res, next) => {
       }
     } catch (error) {
       res.status(413).send({
-<<<<<<< HEAD
         mensaje: estaPrestado,
       });
     }
@@ -320,24 +237,11 @@ router.delete("/:id", async (req, res, next) => {
   } catch (error) {
     res.status(413).send({
       mensaje: "Error inesperado",
-=======
-        mensaje:
-          estaPrestado,
-      });
-    }
- 
-    //const respuesta = await categoriaModel.find();
-  } catch (error) {
-    res.status(413).send({
-      mensaje:
-        "Error inesperado",
->>>>>>> ebf692f8f7d3b63ea1d65285b9f8a7db1492a2d0
     });
     next(error);
   }
 });
 
-<<<<<<< HEAD
 router.delete("/:id", async (req, res, next) => {
   const { id } = req.params;
   try {
@@ -359,28 +263,6 @@ router.delete("/:id", async (req, res, next) => {
     });
     next(error);
   }
-=======
-router.delete("/:id", async(req, res, next) => {
-    const { id } = req.params;
-    try {
-        const libro = await LibroModel.findById(id);
-        if (libro.persona_id[0] != undefined && libro.persona_id[0] != []) {
-            res.status(413).send({
-                mensaje: "Ese libro eta prestado no se puede eliminar"
-            })
-        } else {
-            const libroBorrado = await LibroModel.findByIdAndDelete(id);
-            res.status(200).send({ mensaje: "Se borro correctamente." });
-        }
-
-        //const respuesta = await categoriaModel.find();
-    } catch (error) {
-        res.status(413).send({
-            mensaje: "Error inesperado, No se encuentra es libro, Ese libro eta prestado no se puede eliminar",
-        });
-        next(error);
-    }
->>>>>>> ebf692f8f7d3b63ea1d65285b9f8a7db1492a2d0
 });
 
 module.exports = router;
