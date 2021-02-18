@@ -64,10 +64,10 @@ router.post("/", async (req, res, next) => {
       const libroGuardado = await libro.save();
       res.status(200).json(libroGuardado);
     } else {
-      res.status(413).send({ mensaje: error });
+      res.status(413).send(error);
     }
   } catch (e) {
-    res.status(413).send({ mensaje: e });
+    res.status(413).send("Error inesperado");
     next(e);
   }
 });
