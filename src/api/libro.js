@@ -57,6 +57,7 @@ router.post("/", async (req, res, next) => {
         res.status(413).send({
           mensaje: "Esa persona no se encuentra registrada",
         });
+
       }
     }
     if (guardar) {
@@ -168,7 +169,7 @@ router.put("/prestar/:id", async (req, res) => {
     } catch (error) {
       res.status(413).send({
         mensaje:
-          "no se encontro la persona a la que se quiere prestar el libro",
+          "No se encontro la persona a la que se quiere prestar el libro",
       });
     }
 
