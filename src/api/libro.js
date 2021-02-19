@@ -7,7 +7,6 @@ const PersonaModel = require("../models/persona");
 
 router.post("/", async (req, res, next) => {
   let guardar = true;
-  let error = [];
   try {
     //Validacion de datos
 
@@ -18,7 +17,9 @@ router.post("/", async (req, res, next) => {
       req.body.categoria_id == ""
     ) {
       guardar = false;
-      error.push("Falta nombre o categoria.");
+      res.status(413).send({
+        mensaje: "Falta nombre o categoria.",
+      });
     }
     const libro = new LibroModel({
       nombre: req.body.nombre.toUpperCase(),
@@ -27,47 +28,47 @@ router.post("/", async (req, res, next) => {
       persona_id: req.body.persona_id ? req.body.persona_id : [],
     });
 
-    const existeLibro = await LibroModel.findOne({
-      nombre: req.body.nombre.toUpperCase(),
-    });
-    if (existeLibro) {
-      guardar = false;
-      error.push("Ese libro ya se encuentra registrado");
-    }
+    try {
+      const existeLibro = await LibroModel.findOne({
+        nombre: req.body.nombre.toUpperCase(),
+      });
+      if (existeLibro) {
+        guardar = false;
+        res.status(413).send({
+          mensaje: "Ese libro ya se encuentra registrado",
+        });
+      }
+    } catch (error) {}
 
     try {
       categoria = await CategoriaModel.findOne({ _id: req.body.categoria_id });
-
-      if (!categoria) {
-        guardar = false;
-        error.push("No existe la categoria seleccionada");
-      }
     } catch (e) {
       guardar = false;
-      error.push("Error inesperado");
+      res.status(413).send({
+        mensaje: "La categoria seleccionada no existe",
+      });
     }
 
     if (req.body.persona_id) {
       try {
         persona = await PersonaModel.findOne({ _id: req.body.persona_id });
-
-        if (!persona) {
-          guardar = false;
-          error.push("Esa persona no se encuentra registrada");
-        }
       } catch (e) {
         guardar = false;
-        error.push("Error inesperado");
+        res.status(413).send({
+          mensaje: "Esa persona no se encuentra registrada",
+        });
       }
     }
     if (guardar) {
       const libroGuardado = await libro.save();
       res.status(200).json(libroGuardado);
     } else {
-      res.status(413).send(error);
+      res.status(413).send({
+        mensaje: "No se ha podido guardar el libro",
+      });
     }
   } catch (e) {
-    res.status(413).send("Error inesperado");
+    res.status(413).send({ mensaje: e });
     next(e);
   }
 });
