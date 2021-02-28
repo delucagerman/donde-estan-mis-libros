@@ -65,4 +65,24 @@ router.delete("/:id", async (req, res, next) => {
   }
 });
 
+router.put("/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const updateCategoria = await CategoriaModel.findByIdAndUpdate(
+      id,
+      {
+        id: req.body.id.toUpperCase(),
+        nombre: req.body.nombre.toUpperCase(),
+      },
+      { new: true }
+    );
+    res.status(200).json(updateCategoria);
+  } catch (error) {
+    console.log(error);
+    res.status(413).send({
+      mensaje: "No se encuentra esa categoria",
+    });
+    next(error);
+  }
+});
 module.exports = router;
