@@ -101,6 +101,24 @@ router.get("/:id", async (req, res, next) => {
   }
 });
 
+router.get("/ctLibro/:id", async (req, res, next) => {
+  const { id } = req.params;
+  var libros = [];
+  try {
+    const libro = await LibroModel.find()
+    for (let index = 0; index < libro.length; index++) {
+      if(libro[index].categoria_id[0] == id){
+        libros.push(libro[index])
+      }
+    }
+    res.status(200).json(libros);
+  } catch (error) {
+    res.status(413);
+    res.send({ mensaje: "No se encuentran libros bajo esa categoría" });
+    next(error);
+  }
+});
+
 router.put("/:id", async (req, res, next) => {
   const { id } = req.params;
   try {
