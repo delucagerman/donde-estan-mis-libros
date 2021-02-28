@@ -57,7 +57,6 @@ router.post("/", async (req, res, next) => {
         res.status(413).send({
           mensaje: "Esa persona no se encuentra registrada",
         });
-
       }
     }
     if (guardar) {
@@ -76,7 +75,9 @@ router.post("/", async (req, res, next) => {
 
 router.get("/", async (req, res, next) => {
   try {
-    const libro = await LibroModel.find();
+    const libro = await LibroModel.find()
+      .populate("persona_id")
+      .populate("categoria_id");
     //const libro = await LibroModel.find().populate('persona_id');
     //populate muestra todos los datos de la persona que tiene el libro
     res.status(200).json(libro);
@@ -103,25 +104,12 @@ router.get("/:id", async (req, res, next) => {
 router.put("/:id", async (req, res, next) => {
   const { id } = req.params;
   try {
-    libro = await LibroModel.findOne({ _id: req.body.id });
-
-    if (
-      req.body.nombre.toUpperCase() == libro.nombre.toUpperCase() &&
-      req.body.id == libro.id &&
-      req.body.persona_id == libro.persona_id &&
-      req.body.categoria_id == libro.categoria_id
-    ) {
-      const updatedLibro = await LibroModel.findByIdAndUpdate(
-        id,
-        { descripcion: req.body.descripcion.toUpperCase() },
-        { new: true }
-      );
-      res.status(200).json(updatedLibro);
-    } else {
-      res.status(413).send({
-        mensaje: "Solo se pude modificar la descripcion del libro",
-      });
-    }
+    const updatedLibro = await LibroModel.findByIdAndUpdate(
+      id,
+      { descripcion: req.body.descripcion.toUpperCase() },
+      { new: true }
+    );
+    res.status(200).json(updatedLibro);
   } catch (error) {
     res.status(413).send({
       mensaje: "Ocurrió un error inesperado",
@@ -158,11 +146,12 @@ router.put("/devolver/:id", async (req, res) => {
     }
   } catch (error) {
     console.log(error);
-    res.status(413).send({ mensaje: "Ocurrio un error inesperado" });
+    res.status(413).send(error);
   }
 });
 
 router.put("/prestar/:id", async (req, res) => {
+  const { id } = req.params;
   try {
     try {
       persona = await PersonaModel.findOne({ _id: req.body.persona_id });
@@ -174,17 +163,17 @@ router.put("/prestar/:id", async (req, res) => {
     }
 
     try {
-      libro = await LibroModel.findOne({ _id: req.body.id });
+      libro = await LibroModel.findOne({ _id: id });
     } catch (error) {
       res.status(413).send({
         mensaje: "No se encontró el libro",
       });
     }
 
-    var libro = await LibroModel.findOne({ _id: req.body.id });
+    var libro = await LibroModel.findOne({ _id: id });
     if (!libro.persona_id[0]) {
       LibroModel.findByIdAndUpdate(
-        req.body.id,
+        id,
         { persona_id: req.body.persona_id },
         function (err, docs) {
           if (err) {
