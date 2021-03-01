@@ -71,7 +71,6 @@ router.put("/:id", async (req, res) => {
     const updateCategoria = await CategoriaModel.findByIdAndUpdate(
       id,
       {
-        id: req.body.id.toUpperCase(),
         nombre: req.body.nombre.toUpperCase(),
       },
       { new: true }
@@ -80,7 +79,7 @@ router.put("/:id", async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(413).send({
-      mensaje: "No se encuentra esa categoria",
+      mensaje: "Esa categoria ya se encuentra guardada.",
     });
     next(error);
   }
